@@ -28,6 +28,7 @@ type compiledFunction struct {
 type goFunction struct {
 	val reflect.Value
 	typ reflect.Type
+	gas uint64
 }
 
 func (fn goFunction) call(vm *VM, index int64) {
@@ -36,6 +37,10 @@ func (fn goFunction) call(vm *VM, index int64) {
 	numIn := fn.typ.NumIn()
 	args := make([]reflect.Value, numIn)
 	proc := NewProcess(vm)
+
+
+	// add gas cost
+	vm.addCallGas(fn.gas)
 
 	// Pass proc as an argument. Check that the function indeed
 	// expects a *Process argument.

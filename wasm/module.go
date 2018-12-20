@@ -24,6 +24,7 @@ type Function struct {
 	Sig  *FunctionSig
 	Body *FunctionBody
 	Host reflect.Value
+	Gas uint64
 }
 
 // IsHost indicates whether this function is a host function as defined in:

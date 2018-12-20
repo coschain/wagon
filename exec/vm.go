@@ -60,6 +60,11 @@ type VM struct {
 	memory  []byte
 	funcs   []function
 
+	maxGas uint64
+	costGas uint64
+	gasTable [256]uint64
+
+
 	funcTable [256]func()
 
 	// RecoverPanic controls whether the `ExecCode` method
@@ -107,6 +112,7 @@ func NewVM(module *wasm.Module) (*VM, error) {
 			vm.funcs[i] = goFunction{
 				typ: fn.Host.Type(),
 				val: fn.Host,
+				gas: fn.Gas,
 			}
 			nNatives++
 			continue
@@ -393,6 +399,9 @@ outer:
 		default:
 			vm.funcTable[op]()
 		}
+
+		// add gas cost
+		vm.addOpGas(op)
 	}
 
 	if compiled.returns {
