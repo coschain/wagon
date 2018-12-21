@@ -48,7 +48,7 @@ func (vm *VM) addCallGas( gas uint64 )  {
 
 	vm.CostGas = cost
 	if vm.MaxGas < vm.CostGas {
-		vm.abort = true
+		panic("gas cost overflow")
 	}
 }
 
@@ -61,7 +61,7 @@ func (vm *VM) addOpGas( op byte )  {
 
 	vm.CostGas = cost
 	if vm.MaxGas < vm.CostGas {
-		vm.abort = true
+		panic("gas cost overflow")
 	}
 }
 
@@ -186,13 +186,13 @@ func (vm *VM) InitGasTable( maxGas uint64 ) {
 	//vm.gasTable[ops.F32ReinterpretI32] = vm.f32ReinterpretI32
 	//vm.gasTable[ops.F64ReinterpretI64] = vm.f64ReinterpretI64
 
-	//vm.gasTable[ops.I32WrapI64] = vm.i32Wrapi64
+	vm.gasTable[ops.I32WrapI64] = GasUnary
 	//vm.gasTable[ops.I32TruncSF32] = vm.i32TruncSF32
 	//vm.gasTable[ops.I32TruncUF32] = vm.i32TruncUF32
 	//vm.gasTable[ops.I32TruncSF64] = vm.i32TruncSF64
 	//vm.gasTable[ops.I32TruncUF64] = vm.i32TruncUF64
-	//vm.gasTable[ops.I64ExtendSI32] = vm.i64ExtendSI32
-	//vm.gasTable[ops.I64ExtendUI32] = vm.i64ExtendUI32
+	vm.gasTable[ops.I64ExtendSI32] = GasUnary
+	vm.gasTable[ops.I64ExtendUI32] = GasUnary
 	//vm.gasTable[ops.I64TruncSF32] = vm.i64TruncSF32
 	//vm.gasTable[ops.I64TruncUF32] = vm.i64TruncUF32
 	//vm.gasTable[ops.I64TruncSF64] = vm.i64TruncSF64
@@ -248,4 +248,8 @@ func (vm *VM) InitGasTable( maxGas uint64 ) {
 
 	vm.gasTable[ops.Call] = GasCall
 	vm.gasTable[ops.CallIndirect] = GasCallIndirect
+	vm.gasTable[ops.BrIf] = GasBlock
+	vm.gasTable[ops.If] = GasIf
+	vm.gasTable[ops.End] = GasIf
+	vm.gasTable[ops.Block] = GasBlock
 }

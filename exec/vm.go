@@ -63,7 +63,7 @@ type VM struct {
 	MaxGas   uint64
 	CostGas  uint64
 	gasTable [256]uint64
-
+	callDepth int32
 
 	funcTable [256]func()
 
@@ -79,6 +79,8 @@ type VM struct {
 
 // As per the WebAssembly spec: https://github.com/WebAssembly/design/blob/27ac254c854994103c24834a994be16f74f54186/Semantics.md#linear-memory
 const wasmPageSize = 65536 // (64 KB)
+const wasmMaxPage = 512 // ( 32MB memory )
+const wasmMaxDepth = 256 // ( call depth )
 
 var endianess = binary.LittleEndian
 
@@ -328,6 +330,14 @@ func (vm *VM) ExecCode(fnIndex int64, args ...uint64) (rtrn interface{}, err err
 }
 
 func (vm *VM) execCode(compiled compiledFunction) uint64 {
+
+	vm.callDepth++
+	defer func() { vm.callDepth-- }()
+
+	if vm.callDepth > wasmMaxDepth{
+		panic("call depth error")
+	}
+
 outer:
 	for int(vm.ctx.pc) < len(vm.ctx.code) && !vm.abort {
 		op := vm.ctx.code[vm.ctx.pc]

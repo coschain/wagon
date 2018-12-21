@@ -383,13 +383,11 @@ func BenchmarkModules(b *testing.B) {
 	for _, file := range files {
 		fileName := filepath.Join("testdata/spec", file.FileName)
 		testCases := file.Tests
-		b.Run(fileName, func(b *testing.B) {
-			path, err := filepath.Abs(fileName)
-			if err != nil {
-				b.Fatal(err)
-			}
-			runTest(path, testCases, b)
-		})
+		path, err := filepath.Abs(fileName)
+		if err != nil {
+			b.Fatal(err)
+		}
+		runTest(path, testCases, b)
 	}
 }
 
@@ -399,4 +397,113 @@ func TestNonSpec(t *testing.T) {
 
 func TestSpec(t *testing.T) {
 	testModules(t, specTestsDir)
+}
+
+
+func TestGas(t *testing.T) {
+
+	fileName := filepath.Join("./testdata/ext", "ext.wasm")
+	file, err := os.Open(fileName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+
+	module, err := wasm.ReadModule(file, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = validate.VerifyModule(module); err != nil {
+		t.Fatalf("%s: %v", fileName, err)
+	}
+
+
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 100 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["main"].Index), 10)
+		fmt.Println("cost gas:", vm.CostGas)
+		if err == nil {
+			t.Fatalf("%s: %v, %d", fileName, err, vm.CostGas)
+		}
+	}
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 1000000 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["main"].Index), 10)
+		if err != nil {
+			t.Fatalf("%s: %v, %d", fileName, err, vm.CostGas)
+		}
+	}
+
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 1000000 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["grow"].Index), 510)
+		if err != nil {
+			t.Fatalf("%s: %v, %d", fileName, err, vm.CostGas)
+		}
+	}
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 1000000 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["grow"].Index), 512)
+		if err == nil {
+			t.Fatalf("%s: %v, %d", fileName, err, vm.CostGas)
+		}
+	}
+
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 1000000 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["callDepth"].Index), 255)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+	}
+
+
+	{
+		vm, err := exec.NewVM(module)
+		if err != nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+		vm.RecoverPanic = true
+
+		vm.InitGasTable( 1000000 )
+		_, err = vm.ExecCode( int64(module.Export.Entries["callDepth"].Index), 257 )
+		if err == nil {
+			t.Fatalf("%s: %v", fileName, err)
+		}
+	}
 }
