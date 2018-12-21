@@ -40,28 +40,38 @@ var(
 )
 
 func (vm *VM) addCallGas( gas uint64 )  {
-	vm.costGas += gas
+	cost := vm.CostGas + gas
 
-	if vm.maxGas <= vm.costGas {
+	if cost < vm.CostGas {
+		panic("gas cost overflow")
+	}
+
+	vm.CostGas = cost
+	if vm.MaxGas < vm.CostGas {
 		vm.abort = true
 	}
 }
 
 func (vm *VM) addOpGas( op byte )  {
-	vm.costGas += vm.gasTable[op]
+	cost := vm.CostGas + vm.gasTable[op]
 
-	if vm.maxGas <= vm.costGas {
+	if cost < vm.CostGas {
+		panic("gas cost overflow")
+	}
+
+	vm.CostGas = cost
+	if vm.MaxGas < vm.CostGas {
 		vm.abort = true
 	}
 }
 
 func (vm *VM) InitGasTable( maxGas uint64 ) {
 
-	vm.maxGas = maxGas
-	vm.costGas = 0
+	vm.MaxGas = maxGas
+	vm.CostGas = 0
 
 	for index := range vm.gasTable{
-		vm.gasTable[index] = math.MaxInt64
+		vm.gasTable[index] = math.MaxUint64
 	}
 
 	vm.gasTable[ops.I32Clz] = GasUnary

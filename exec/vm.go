@@ -60,8 +60,8 @@ type VM struct {
 	memory  []byte
 	funcs   []function
 
-	maxGas uint64
-	costGas uint64
+	MaxGas   uint64
+	CostGas  uint64
 	gasTable [256]uint64
 
 
