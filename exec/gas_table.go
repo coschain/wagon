@@ -5,6 +5,7 @@
 package exec
 
 import (
+	"github.com/go-interpreter/wagon/exec/internal/compile"
 	ops "github.com/go-interpreter/wagon/wasm/operators"
 	"math"
 )
@@ -14,6 +15,8 @@ var(
 	GasIf		uint64 = 6
 	GasLoop	uint64 = 23
 	GasBreak uint64 = 4
+	GasJump uint64 = 4
+
 	GasSwitch uint64 = 12
 	GasCall uint64 = 104
 	GasCallImport uint64 = 30
@@ -248,8 +251,16 @@ func (vm *VM) InitGasTable( maxGas uint64 ) {
 
 	vm.gasTable[ops.Call] = GasCall
 	vm.gasTable[ops.CallIndirect] = GasCallIndirect
+
 	vm.gasTable[ops.BrIf] = GasBlock
 	vm.gasTable[ops.If] = GasIf
 	vm.gasTable[ops.End] = GasIf
 	vm.gasTable[ops.Block] = GasBlock
+
+	vm.gasTable[compile.OpJmp] = GasJump
+	vm.gasTable[compile.OpJmpZ] = GasJump
+	vm.gasTable[compile.OpJmpNz] = GasJump
+	vm.gasTable[compile.OpDiscard] = GasJump
+	vm.gasTable[compile.OpDiscardPreserveTop] = GasJump
+	vm.gasTable[ops.BrTable] = GasBlock
 }
