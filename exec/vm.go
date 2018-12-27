@@ -60,9 +60,9 @@ type VM struct {
 	memory  []byte
 	funcs   []function
 
-	MaxGas   uint64
-	CostGas  uint64
-	gasTable [256]uint64
+	MaxGas    uint64
+	CostGas   uint64
+	gasTable  [256]uint64
 	callDepth int32
 
 	funcTable [256]func()
@@ -79,8 +79,8 @@ type VM struct {
 
 // As per the WebAssembly spec: https://github.com/WebAssembly/design/blob/27ac254c854994103c24834a994be16f74f54186/Semantics.md#linear-memory
 const wasmPageSize = 65536 // (64 KB)
-const wasmMaxPage = 512 // ( 32MB memory )
-const wasmMaxDepth = 256 // ( call depth )
+const wasmMaxPage = 512    // ( 32MB memory )
+const wasmMaxDepth = 256   // ( call depth )
 
 var endianess = binary.LittleEndian
 
@@ -334,7 +334,7 @@ func (vm *VM) execCode(compiled compiledFunction) uint64 {
 	vm.callDepth++
 	defer func() { vm.callDepth-- }()
 
-	if vm.callDepth > wasmMaxDepth{
+	if vm.callDepth > wasmMaxDepth {
 		panic("call depth error")
 	}
 
@@ -411,6 +411,7 @@ outer:
 		}
 
 		// add gas cost
+		// this line could occur before vm.funcTable.
 		vm.addOpGas(op)
 	}
 
@@ -473,6 +474,17 @@ func (proc *Process) WriteAt(p []byte, off int64) (int, error) {
 	}
 
 	return length, err
+}
+
+func (proc *Process) AddGas(fee uint64) {
+	cost := proc.vm.CostGas + fee
+	if cost < proc.vm.CostGas {
+		panic("gas cost overflow")
+	}
+	if proc.vm.MaxGas < cost {
+		panic("gas cost overflow")
+	}
+	proc.vm.CostGas = cost
 }
 
 // Terminate stops the execution of the current module.
