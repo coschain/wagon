@@ -10,39 +10,39 @@ import (
 	"math"
 )
 
-var(
+var (
 	GasBlock uint64 = 29
-	GasIf		uint64 = 6
-	GasLoop	uint64 = 23
+	GasIf    uint64 = 6
+	GasLoop  uint64 = 23
 	GasBreak uint64 = 4
-	GasJump uint64 = 4
+	GasJump  uint64 = 4
 
-	GasSwitch uint64 = 12
-	GasCall uint64 = 104
-	GasCallImport uint64 = 30
+	GasSwitch       uint64 = 12
+	GasCall         uint64 = 104
+	GasCallImport   uint64 = 30
 	GasCallIndirect uint64 = 430
-	GasGetLocal uint64 = 1
-	GasSetLocal uint64 = 4
-	GasGetGlobal uint64 = 8
-	GasSetGlobal uint64 = 8
-	GasLoad uint64 = 7
-	GasStore uint64 = 10
-	GasConst uint64 = 1
-	GasUnary uint64 = 4
-	GasBinary uint64 = 8
-	GasSelect uint64 = 10
-	GasDrop uint64 = 5
-	GasReturn uint64 = 4
-	GasHost uint64 = 3
-	GasNop uint64 = 1
-	GasUnreachable uint64 = math.MaxInt64
+	GasGetLocal     uint64 = 1
+	GasSetLocal     uint64 = 4
+	GasGetGlobal    uint64 = 8
+	GasSetGlobal    uint64 = 8
+	GasLoad         uint64 = 7
+	GasStore        uint64 = 10
+	GasConst        uint64 = 1
+	GasUnary        uint64 = 4
+	GasBinary       uint64 = 8
+	GasSelect       uint64 = 10
+	GasDrop         uint64 = 5
+	GasReturn       uint64 = 4
+	GasHost         uint64 = 3
+	GasNop          uint64 = 1
+	GasUnreachable  uint64 = math.MaxInt64
 
 	// TODO checktime
 	GasCurrentMemory uint64 = 5
-	GasGrowMemory uint64 = 10
+	GasGrowMemory    uint64 = 10
 )
 
-func (vm *VM) addCallGas( gas uint64 )  {
+func (vm *VM) addCallGas(gas uint64) {
 	cost := vm.CostGas + gas
 
 	if cost < vm.CostGas {
@@ -55,7 +55,7 @@ func (vm *VM) addCallGas( gas uint64 )  {
 	}
 }
 
-func (vm *VM) addOpGas( op byte )  {
+func (vm *VM) addOpGas(op byte) {
 	cost := vm.CostGas + vm.gasTable[op]
 
 	if cost < vm.CostGas {
@@ -68,14 +68,19 @@ func (vm *VM) addOpGas( op byte )  {
 	}
 }
 
-func (vm *VM) InitGasTable( maxGas uint64 ) {
+func (vm *VM) InitGasTable(maxGas uint64) {
 
 	vm.MaxGas = maxGas
 	vm.CostGas = 0
 
-	for index := range vm.gasTable{
+	for index := range vm.gasTable {
 		vm.gasTable[index] = math.MaxUint64
 	}
+
+	vm.initGasTable()
+}
+
+func (vm *VM) initGasTable() {
 
 	vm.gasTable[ops.I32Clz] = GasUnary
 	vm.gasTable[ops.I32Ctz] = GasUnary

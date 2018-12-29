@@ -31,13 +31,17 @@ type goFunction struct {
 	gas uint64
 }
 
+type mockGoFunction struct {
+	typ reflect.Type
+	gas uint64
+}
+
 func (fn goFunction) call(vm *VM, index int64) {
 	// numIn = # of call inputs + vm, as the function expects
 	// an additional *VM argument
 	numIn := fn.typ.NumIn()
 	args := make([]reflect.Value, numIn)
 	proc := NewProcess(vm)
-
 
 	// add gas cost
 	vm.addCallGas(fn.gas)
@@ -81,6 +85,27 @@ func (fn goFunction) call(vm *VM, index int64) {
 		default:
 			panic(fmt.Sprintf("exec: return value %d invalid kind=%v", i, kind))
 		}
+	}
+}
+
+func (fn mockGoFunction) call(vm *VM, index int64) {
+
+	// add gas cost
+	vm.addCallGas(fn.gas)
+
+	// do not care in parameters
+	// but still should pop all of them
+	// be careful, the first argument is proc, ignore it
+	numIn := fn.typ.NumIn()
+	for i := numIn - 1; i >= 1; i-- {
+		_ = vm.popUint64()
+	}
+	// fill out parameters with zero
+	// so it could not be accurate, especially using return value of native function as condition
+	// in condition-statement
+	numOut := fn.typ.NumOut()
+	for i := 0; i < numOut; i++ {
+		vm.pushUint64(0)
 	}
 }
 
