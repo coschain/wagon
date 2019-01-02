@@ -1,7 +1,6 @@
 package exec
 
 import (
-	"fmt"
 	"github.com/go-interpreter/wagon/disasm"
 	"github.com/go-interpreter/wagon/exec/internal/compile"
 	"github.com/go-interpreter/wagon/wasm"
@@ -37,7 +36,6 @@ func NewEstimator(module *wasm.Module) (*VM, error) {
 		// section of:
 		// https://webassembly.github.io/spec/core/exec/modules.html#allocation
 		if fn.IsHost() {
-			fmt.Println(fn.Gas)
 			vm.funcs[i] = mockGoFunction{
 				typ: fn.Host.Type(),
 				gas: fn.Gas,
