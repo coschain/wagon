@@ -168,6 +168,24 @@ func NewVM(module *wasm.Module) (*VM, error) {
 	return &vm, nil
 }
 
+func (vm *VM) Reset() {
+	//reset context
+	vm.ctx.stack = vm.ctx.stack[:0]
+	vm.ctx.locals = vm.ctx.locals[:0]
+	vm.ctx.code = vm.ctx.code[:0]
+	vm.ctx.pc = 0
+	vm.ctx.curFunc = 0
+	// reset memory
+	vm.memory = make([]byte, uint(vm.module.Memory.Entries[0].Limits.Initial)*wasmPageSize)
+	copy(vm.memory, vm.module.LinearMemoryIndexSpace[0])
+	// reset other
+	vm.MaxGas = 0
+	vm.CostGas = 0
+	vm.callDepth = 0
+	vm.RecoverPanic = false
+	vm.abort = false
+}
+
 // Memory returns the linear memory space for the VM.
 func (vm *VM) Memory() []byte {
 	return vm.memory
