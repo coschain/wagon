@@ -168,6 +168,10 @@ func NewVM(module *wasm.Module) (*VM, error) {
 	return &vm, nil
 }
 
+func (vm *VM) Module() *wasm.Module {
+	return vm.module
+}
+
 func (vm *VM) Reset() {
 	//reset context
 	vm.ctx.stack = vm.ctx.stack[:0]
