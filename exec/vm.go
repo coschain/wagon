@@ -188,6 +188,25 @@ func (vm *VM) Reset() {
 	vm.callDepth = 0
 	vm.RecoverPanic = false
 	vm.abort = false
+
+
+	vm.globals = make([]uint64, len(vm.module.GlobalIndexSpace))
+	for i, global := range vm.module.GlobalIndexSpace {
+		val, err := vm.module.ExecInitExpr(global.Init)
+		if err != nil {
+			panic("reset error")
+		}
+		switch v := val.(type) {
+		case int32:
+			vm.globals[i] = uint64(v)
+		case int64:
+			vm.globals[i] = uint64(v)
+		case float32:
+			vm.globals[i] = uint64(math.Float32bits(v))
+		case float64:
+			vm.globals[i] = uint64(math.Float64bits(v))
+		}
+	}
 }
 
 // Memory returns the linear memory space for the VM.
