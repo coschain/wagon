@@ -65,6 +65,8 @@ type VM struct {
 	gasTable  [256]uint64
 	callDepth int32
 
+	tag interface{}
+
 	funcTable [256]func()
 
 	// RecoverPanic controls whether the `ExecCode` method
@@ -172,6 +174,9 @@ func (vm *VM) Module() *wasm.Module {
 	return vm.module
 }
 
+func (vm *VM) SetTag( v interface{} ) {
+	vm.tag = v
+}
 func (vm *VM) Reset() {
 	//reset context
 	vm.ctx.stack = vm.ctx.stack[:0]
@@ -526,6 +531,10 @@ func (proc *Process) AddGas(fee uint64) {
 		panic("gas cost overflow")
 	}
 	proc.vm.CostGas = cost
+}
+
+func (proc *Process) GetTag() interface{} {
+	return proc.vm.tag
 }
 
 // Terminate stops the execution of the current module.
