@@ -386,7 +386,13 @@ func (vm *VM) execCode(compiled compiledFunction) uint64 {
 
 outer:
 	for int(vm.ctx.pc) < len(vm.ctx.code) && !vm.abort {
+
 		op := vm.ctx.code[vm.ctx.pc]
+
+		// add gas cost
+		// this line could occur before vm.funcTable.
+		vm.addOpGas(op)
+
 		vm.ctx.pc++
 		switch op {
 		case ops.Return:
@@ -455,10 +461,6 @@ outer:
 		default:
 			vm.funcTable[op]()
 		}
-
-		// add gas cost
-		// this line could occur before vm.funcTable.
-		vm.addOpGas(op)
 	}
 
 	if compiled.returns {

@@ -267,5 +267,7 @@ func (vm *VM) initGasTable() {
 	vm.gasTable[compile.OpJmpNz] = GasJump
 	vm.gasTable[compile.OpDiscard] = GasJump
 	vm.gasTable[compile.OpDiscardPreserveTop] = GasJump
+	vm.gasTable[ops.Return] = GasJump
+
 	vm.gasTable[ops.BrTable] = GasBlock
 }
