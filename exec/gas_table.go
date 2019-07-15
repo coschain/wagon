@@ -258,8 +258,11 @@ func (vm *VM) initGasTable() {
 	vm.gasTable[ops.CallIndirect] = GasCallIndirect
 
 	vm.gasTable[ops.BrIf] = GasBlock
+	vm.gasTable[ops.Br] = GasBlock
 	vm.gasTable[ops.If] = GasIf
+	vm.gasTable[ops.Else] = GasIf
 	vm.gasTable[ops.End] = GasIf
+	vm.gasTable[ops.Loop] = GasLoop
 	vm.gasTable[ops.Block] = GasBlock
 
 	vm.gasTable[compile.OpJmp] = GasJump
